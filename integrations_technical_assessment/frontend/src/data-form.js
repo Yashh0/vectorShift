@@ -28,14 +28,27 @@ export const DataForm = ({ integrationType, credentials }) => {
         }
     }
 
+    // Format data for display
+    const formatDataForDisplay = (data) => {
+        if (!data) return '';
+        if (Array.isArray(data)) {
+            return data.map((item, index) => {
+                return `${index + 1}. ${item.name || item.id || 'Unnamed Item'} (${item.type || 'Unknown Type'})`;
+            }).join('\n');
+        }
+        return JSON.stringify(data, null, 2);
+    };
+
     return (
         <Box display='flex' justifyContent='center' alignItems='center' flexDirection='column' width='100%'>
             <Box display='flex' flexDirection='column' width='100%'>
                 <TextField
                     label="Loaded Data"
-                    value={loadedData || ''}
+                    value={formatDataForDisplay(loadedData)}
                     sx={{mt: 2}}
                     InputLabelProps={{ shrink: true }}
+                    multiline
+                    rows={8}
                     disabled
                 />
                 <Button

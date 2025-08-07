@@ -2,6 +2,8 @@
 
 import json
 import secrets
+import os
+from dotenv import load_dotenv
 from fastapi import Request, HTTPException
 from fastapi.responses import HTMLResponse
 import httpx
@@ -12,8 +14,12 @@ from integrations.integration_item import IntegrationItem
 
 from redis_client import add_key_value_redis, get_value_redis, delete_key_redis
 
-CLIENT_ID = 'XXX'
-CLIENT_SECRET = 'XXX'
+# Load environment variables
+load_dotenv()
+
+# Notion OAuth credentials from environment variables
+CLIENT_ID = os.getenv('NOTION_CLIENT_ID')
+CLIENT_SECRET = os.getenv('NOTION_CLIENT_SECRET')
 encoded_client_id_secret = base64.b64encode(f'{CLIENT_ID}:{CLIENT_SECRET}'.encode()).decode()
 
 REDIRECT_URI = 'http://localhost:8000/integrations/notion/oauth2callback'
@@ -154,5 +160,7 @@ async def get_items_notion(credentials) -> list[IntegrationItem]:
                 create_integration_item_metadata_object(result)
             )
 
-        print(list_of_integration_item_metadata)
-    return
+        print(f'Notion integration items: {list_of_integration_item_metadata}')
+        return list_of_integration_item_metadata
+    else:
+        raise HTTPException(status_code=response.status_code, detail=f'Notion API error: {response.text}')

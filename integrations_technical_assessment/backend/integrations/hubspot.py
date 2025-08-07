@@ -2,6 +2,8 @@
 
 import json
 import secrets
+import os
+from dotenv import load_dotenv
 from fastapi import Request, HTTPException
 from fastapi.responses import HTMLResponse
 import httpx
@@ -12,12 +14,14 @@ from integrations.integration_item import IntegrationItem
 
 from redis_client import add_key_value_redis, get_value_redis, delete_key_redis
 
-# HubSpot OAuth credentials - you'll need to create these in HubSpot Developer Portal
-# Replace these with your actual HubSpot app credentials from https://developers.hubspot.com/
-CLIENT_ID = 'your_hubspot_client_id_here'  # Replace with your actual Client ID
-CLIENT_SECRET = 'your_hubspot_client_secret_here'  # Replace with your actual Client Secret
+# Load environment variables
+load_dotenv()
+
+# HubSpot OAuth credentials from environment variables
+CLIENT_ID = os.getenv('HUBSPOT_CLIENT_ID')
+CLIENT_SECRET = os.getenv('HUBSPOT_CLIENT_SECRET')
 REDIRECT_URI = 'http://localhost:8000/integrations/hubspot/oauth2callback'
-authorization_url = f'https://app.hubspot.com/oauth/authorize?client_id={CLIENT_ID}&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fintegrations%2Fhubspot%2Foauth2callback&scope=contacts%20oauth'
+authorization_url = f'https://app.hubspot.com/oauth/authorize?client_id={CLIENT_ID}&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fintegrations%2Fhubspot%2Foauth2callback&scope=crm.objects.contacts.read'
 
 async def authorize_hubspot(user_id, org_id):
     state_data = {
@@ -150,11 +154,18 @@ async def get_items_hubspot(credentials) -> list[IntegrationItem]:
                         )
                 else:
                     break
+        elif response.status_code == 401:
+            raise HTTPException(status_code=400, detail='Invalid access token. Please reconnect to HubSpot.')
+        elif response.status_code == 403:
+            raise HTTPException(status_code=400, detail='Insufficient permissions. Please check your HubSpot app scopes.')
         else:
-            raise HTTPException(status_code=response.status_code, detail=f'HubSpot API error: {response.text}')
+            raise HTTPException(status_code=400, detail=f'HubSpot API error: {response.text}')
             
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f'Error fetching HubSpot data: {str(e)}')
+        raise HTTPException(status_code=400, detail=f'Error fetching HubSpot data: {str(e)}')
     
     print(f'HubSpot integration items: {list_of_integration_item_metadata}')
     return list_of_integration_item_metadata
