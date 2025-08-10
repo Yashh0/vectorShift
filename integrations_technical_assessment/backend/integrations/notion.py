@@ -160,7 +160,13 @@ async def get_items_notion(credentials) -> list[IntegrationItem]:
                 create_integration_item_metadata_object(result)
             )
 
-        print(f'Notion integration items: {list_of_integration_item_metadata}')
+        print("=" * 50)
+        print("📝 NOTION DATA LOADED SUCCESSFULLY!")
+        print("=" * 50)
+        print(f"Total items found: {len(list_of_integration_item_metadata)}")
+        for i, item in enumerate(list_of_integration_item_metadata, 1):
+            print(f"{i}. {item.name} ({item.type}) - ID: {item.id}")
+        print("=" * 50)
         return list_of_integration_item_metadata
     else:
         raise HTTPException(status_code=response.status_code, detail=f'Notion API error: {response.text}')

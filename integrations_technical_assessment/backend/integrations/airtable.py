@@ -172,5 +172,11 @@ async def get_items_airtable(credentials) -> list[IntegrationItem]:
                     )
                 )
 
-    print(f'list_of_integration_item_metadata: {list_of_integration_item_metadata}')
+    print("=" * 50)
+    print("📊 AIRTABLE DATA LOADED SUCCESSFULLY!")
+    print("=" * 50)
+    print(f"Total items found: {len(list_of_integration_item_metadata)}")
+    for i, item in enumerate(list_of_integration_item_metadata, 1):
+        print(f"{i}. {item.name} ({item.type}) - ID: {item.id}")
+    print("=" * 50)
     return list_of_integration_item_metadata

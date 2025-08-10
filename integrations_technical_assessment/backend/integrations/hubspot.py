@@ -167,5 +167,11 @@ async def get_items_hubspot(credentials) -> list[IntegrationItem]:
     except Exception as e:
         raise HTTPException(status_code=400, detail=f'Error fetching HubSpot data: {str(e)}')
     
-    print(f'HubSpot integration items: {list_of_integration_item_metadata}')
+    print("=" * 50)
+    print("🎯 HUBSPOT DATA LOADED SUCCESSFULLY!")
+    print("=" * 50)
+    print(f"Total contacts found: {len(list_of_integration_item_metadata)}")
+    for i, item in enumerate(list_of_integration_item_metadata, 1):
+        print(f"{i}. {item.name} ({item.type}) - ID: {item.id}")
+    print("=" * 50)
     return list_of_integration_item_metadata
